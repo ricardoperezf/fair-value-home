@@ -56,7 +56,12 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
 .seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
-.mode{border-radius:14px;padding:5px}
+.mode{border-radius:14px;padding:5px;grid-template-columns:repeat(3,minmax(0,1fr))}
+.check{display:flex;gap:10px;align-items:flex-start;font-size:.92rem;cursor:pointer}
+.check input{width:20px;height:20px;margin:2px 0 0;accent-color:var(--accent);flex:none}
+.check small{display:block;color:var(--muted);font-size:.8rem}
+.sub{font-size:.8rem;color:var(--muted);margin:0}
+.lines li.sep{border-top:1px dashed var(--line);padding-top:8px}
 .mode button{padding:12px 8px;font-size:.95rem}
 .hint{margin:0;color:var(--muted);font-size:.9rem}
 .fx{display:flex;flex-direction:column;gap:10px;border-top:1px dashed var(--line);padding-top:14px}
@@ -82,6 +87,8 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
 .verdict.warn{background:var(--warn-bg);color:var(--warn)}
 .verdict.bad{background:var(--bad-bg);color:var(--bad)}
 .verdict p{margin:0;color:var(--ink);font-size:.92rem}
+.alert{background:var(--warn-bg);color:var(--ink);border-radius:10px;padding:12px 14px;font-size:.9rem;margin:0}
+.alert b{color:var(--warn)}
 .note{color:var(--muted);font-size:.82rem;margin:0;text-align:center}
 </style>
 </head>
@@ -89,21 +96,23 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
 <div class="wrap">
   <header>
     <h1>Precio justo de la vivienda</h1>
-    <p>Calcula el precio o el alquiler para ganar el rendimiento que buscas.</p>
+    <p>Calcula el precio, el alquiler o lo que te queda al vender.</p>
   </header>
 
   <div class="seg mode" role="group" aria-label="Qué quieres calcular">
     <button type="button" id="modeA" aria-pressed="true">Tengo el alquiler</button>
     <button type="button" id="modeB" aria-pressed="false">Tengo el precio</button>
+    <button type="button" id="modeC" aria-pressed="false">Voy a vender</button>
   </div>
   <p class="hint" id="modeHint">Te digo cuánto pagar como máximo por la vivienda.</p>
 
   <section class="card" aria-labelledby="d1">
-    <p class="label" id="d1">Datos del alquiler</p>
+    <p class="label" id="d1">Datos</p>
     <div class="seg" role="group" aria-label="Moneda">
       <button type="button" id="btnUSD" aria-pressed="true">$ Dólares</button>
       <button type="button" id="btnCRC" aria-pressed="false">₡ Colones</button>
     </div>
+    <div id="inRent" style="display:flex;flex-direction:column;gap:14px">
     <div class="row">
       <div class="field" id="fAlq">
         <label for="alquiler">Alquiler mensual</label>
@@ -118,9 +127,65 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
         <div class="input"><span class="sym">$</span><input id="condominio" inputmode="decimal" value="250"></div>
       </div>
     </div>
+    <div class="row">
+      <div class="field">
+        <label for="servicios">Servicios municipales al mes</label>
+        <div class="input"><span class="sym">$</span><input id="servicios" inputmode="decimal" value="0"></div>
+      </div>
+      <div class="field">
+        <label for="ibi">Impuesto bienes inmuebles</label>
+        <div class="input"><span>%</span><input id="ibi" inputmode="decimal" value="0.25"></div>
+      </div>
+    </div>
+    <small style="color:var(--muted);font-size:.8rem;margin-top:-6px">Los paga el dueño. Servicios: basura, aseo de vías, parques, según el recibo municipal. El impuesto es 0.25% anual del valor en todo el país.</small>
     <div class="field">
       <label for="tasa">Rendimiento anual deseado</label>
       <div class="input"><span>%</span><input id="tasa" inputmode="decimal" value="8"></div>
+    </div>
+    </div>
+
+    <div id="inSell" style="display:flex;flex-direction:column;gap:14px" hidden>
+      <div class="row">
+        <div class="field">
+          <label for="vCompra">Precio de compra</label>
+          <div class="input"><span class="sym">$</span><input id="vCompra" inputmode="decimal" value="181,818"></div>
+        </div>
+        <div class="field">
+          <label for="vVenta">Precio de venta</label>
+          <div class="input"><span class="sym">$</span><input id="vVenta" inputmode="decimal" value="220,000"></div>
+        </div>
+      </div>
+      <div class="row">
+        <div class="field">
+          <label for="vMejoras">Mejoras con factura</label>
+          <div class="input"><span class="sym">$</span><input id="vMejoras" inputmode="decimal" value="0"></div>
+        </div>
+        <div class="field">
+          <label for="vCom">Comisión corredor</label>
+          <div class="input"><span>%</span><input id="vCom" inputmode="decimal" value="5"></div>
+        </div>
+      </div>
+      <p class="sub">A la comisión se le suma 13% de IVA. Pon 0 si vende sin corredor.</p>
+      <div class="row">
+        <div class="field">
+          <label for="vTras">Traspaso que paga él</label>
+          <div class="input"><span>%</span><input id="vTras" inputmode="decimal" value="0"></div>
+        </div>
+        <div class="field">
+          <label for="vAnios">Años que la tuvo</label>
+          <div class="input"><span>#</span><input id="vAnios" inputmode="decimal" value="5"></div>
+        </div>
+      </div>
+      <p class="sub">Traspaso: lo usual es que lo pague el comprador (0%). Si lo dividen a medias, pon 2.2%.</p>
+      <div class="field">
+        <label for="vRenta">Ganancia neta del alquiler al año</label>
+        <div class="input"><span class="sym">$</span><input id="vRenta" inputmode="decimal" value="14,545"></div>
+        <small>Lo que le quedaba al año después de condominio e impuestos. Pon 0 si no la alquiló.</small>
+      </div>
+      <label class="check" for="vPre2019">
+        <input type="checkbox" id="vPre2019">
+        <span>La compró antes del 1 de julio de 2019<small>Permite pagar 2.25% del precio de venta en vez de 15% de la ganancia. La app elige el más barato.</small></span>
+      </label>
     </div>
 
     <div class="fx" id="fxBox">
@@ -143,21 +208,40 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
     <p class="formula" id="formula"></p>
   </section>
 
+  <p class="alert" id="solidario" hidden><b>Posible impuesto solidario.</b> El valor pasa de ₡143 millones, el límite exento de 2026 para casas de lujo. Ese impuesto no está incluido en este cálculo; confírmalo con un contador.</p>
+
   <section class="card">
     <p class="label">Cómo se calcula</p>
     <ul class="lines" id="linesA">
       <li><span>Alquiler</span><b id="lAlq"></b></li>
       <li><span>Menos condominio</span><b id="lCon"></b></li>
+      <li><span>Menos servicios municipales</span><b id="lSrv"></b></li>
       <li><span>Te queda al mes</span><b id="lNeto"></b></li>
-      <li class="total"><span>Te queda al año</span><b id="lAnual"></b></li>
+      <li><span>Te queda al año</span><b id="lAnual"></b></li>
+      <li><span id="lIbiLbl">Menos impuesto bienes inmuebles</span><b id="lIbi"></b></li>
+      <li class="total"><span>Ganancia neta al año</span><b id="lGan"></b></li>
     </ul>
     <ul class="lines" id="linesB" hidden>
       <li><span>Precio del inmueble</span><b id="bPrecio"></b></li>
       <li><span id="bTasaLbl">Ganancia anual (8%)</span><b id="bAnual"></b></li>
-      <li><span>Ganancia al mes (÷ 12)</span><b id="bNeto"></b></li>
+      <li><span id="bIbiLbl">Impuesto bienes inmuebles</span><b id="bIbi"></b></li>
+      <li><span>Al mes (÷ 12)</span><b id="bNeto"></b></li>
       <li><span>Más condominio</span><b id="bCon"></b></li>
+      <li><span>Más servicios municipales</span><b id="bSrv"></b></li>
       <li class="total"><span>Alquiler a cobrar</span><b id="bAlq"></b></li>
     </ul>
+    <ul class="lines" id="linesC" hidden>
+      <li><span>Precio de venta</span><b id="cVenta"></b></li>
+      <li><span id="cComLbl">Comisión + IVA</span><b id="cCom"></b></li>
+      <li><span>Traspaso</span><b id="cTras"></b></li>
+      <li><span id="cImpLbl">Impuesto ganancia de capital</span><b id="cImp"></b></li>
+      <li class="total"><span>Te queda limpio</span><b id="cNeto"></b></li>
+      <li class="sep"><span>Ganancia de la venta</span><b id="cGanVenta"></b></li>
+      <li><span id="cRentaLbl">Más alquileres cobrados</span><b id="cRenta"></b></li>
+      <li class="total"><span>Ganancia total</span><b id="cTotal"></b></li>
+      <li><span>Rendimiento promedio al año</span><b id="cAnual"></b></li>
+    </ul>
+    <p class="sub" id="cNote" hidden>Se asume que la comisión y el traspaso se restan de la ganancia antes del impuesto. La vivienda donde vive el dueño está exenta. Confírmalo con un contador.</p>
   </section>
 
   <section class="card" aria-labelledby="d2" id="compare">
@@ -178,7 +262,7 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
 
 <script>
 const $ = id => document.getElementById(id);
-const MONEY = ['alquiler','condominio','pedido','precio'];
+const MONEY = ['alquiler','condominio','pedido','precio','servicios','vCompra','vVenta','vMejoras','vRenta'];
 let cur = 'USD';
 let mode = 'A';
 
@@ -207,45 +291,109 @@ function setCurrency(next){
   calc();
 }
 
+const HINTS = {
+  A: 'Te digo cuánto pagar como máximo por la vivienda.',
+  B: 'Te digo cuánto cobrar de alquiler como mínimo para ganar tu rendimiento.',
+  C: 'Te digo cuánto te queda limpio al vender y cuánto ganaste en total.'
+};
+const LABELS = { A: 'Precio máximo a pagar', B: 'Alquiler mínimo a cobrar al mes', C: 'Te queda limpio de la venta' };
 function setMode(next){
   mode = next;
-  $('modeA').setAttribute('aria-pressed', mode === 'A');
-  $('modeB').setAttribute('aria-pressed', mode === 'B');
+  ['A','B','C'].forEach(m => $('mode'+m).setAttribute('aria-pressed', mode === m));
+  $('inRent').hidden = mode === 'C';
+  $('inSell').hidden = mode !== 'C';
   $('fAlq').hidden = mode !== 'A';
   $('fPrecio').hidden = mode !== 'B';
   $('linesA').hidden = mode !== 'A';
   $('linesB').hidden = mode !== 'B';
+  $('linesC').hidden = mode !== 'C';
+  $('cNote').hidden = mode !== 'C';
   $('compare').hidden = mode !== 'A';
-  $('modeHint').textContent = mode === 'A'
-    ? 'Te digo cuánto pagar como máximo por la vivienda.'
-    : 'Te digo cuánto cobrar de alquiler como mínimo para ganar tu rendimiento.';
-  $('resLabel').textContent = mode === 'A' ? 'Precio máximo a pagar' : 'Alquiler mínimo a cobrar al mes';
+  $('modeHint').textContent = HINTS[mode];
+  $('resLabel').textContent = LABELS[mode];
   calc();
 }
 
+function calcC(){
+  const compra = num($('vCompra').value), venta = num($('vVenta').value), mejoras = num($('vMejoras').value);
+  const comPct = num($('vCom').value), trasPct = num($('vTras').value);
+  const anios = num($('vAnios').value), renta = num($('vRenta').value);
+  const pre = $('vPre2019').checked;
+  const com = venta * comPct / 100 * 1.13;
+  const tras = venta * trasPct / 100;
+  const base = Math.max(0, venta - compra - mejoras - com - tras);
+  const imp15 = base * 0.15, imp225 = venta * 0.0225;
+  const use225 = pre && imp225 < imp15;
+  const imp = use225 ? imp225 : imp15;
+  const neto = venta - com - tras - imp;
+  const invertido = compra + mejoras;
+  const ganVenta = neto - invertido;
+  const rentas = renta * anios;
+  const total = ganVenta + rentas;
+  const anual = invertido > 0 && anios > 0 ? total / invertido / anios * 100 : 0;
+
+  const r = rate();
+  const other = cur === 'USD' ? 'CRC' : 'USD';
+  const toOther = n => cur === 'USD' ? n * r : n / r;
+  const ok = venta > 0;
+  $('precioMax').textContent = ok ? money(neto) : '—';
+  $('equiv').textContent = ok && r > 0 ? '≈ ' + fmt(toOther(neto), other) : '';
+  $('formula').textContent = ok ? 'Ganancia total ' + money(total) + (anual ? ' · ' + pct(anual) + ' al año' : '') + tcTxt() : '';
+  $('cVenta').textContent = money(venta);
+  $('cComLbl').textContent = 'Menos comisión ' + pct(comPct) + ' + IVA';
+  $('cCom').textContent = '−' + money(com);
+  $('cTras').textContent = '−' + money(tras);
+  $('cImpLbl').textContent = use225 ? 'Menos impuesto (2.25% del precio)' : 'Menos impuesto (15% de ' + money(base) + ')';
+  $('cImp').textContent = '−' + money(imp);
+  $('cNeto').textContent = money(neto);
+  $('cGanVenta').textContent = (ganVenta < 0 ? '−' : '') + money(Math.abs(ganVenta));
+  $('cRentaLbl').textContent = 'Más alquileres (' + anios.toLocaleString('en-US') + ' años)';
+  $('cRenta').textContent = '+' + money(rentas);
+  $('cTotal').textContent = (total < 0 ? '−' : '') + money(Math.abs(total));
+  $('cAnual').textContent = pct(anual);
+  $('solidario').hidden = true;
+}
+
+const SOLIDARIO_EXENTO = 143000000; // ₡, 2026
+function showSolidario(value){
+  const r = rate();
+  const crc = cur === 'CRC' ? value : value * r;
+  $('solidario').hidden = !(r > 0 && crc > SOLIDARIO_EXENTO);
+}
+const tcTxt = () => rate() > 0 ? '  ·  TC ₡' + rate().toLocaleString('en-US') : '';
+
 function calcB(){
-  const precio = num($('precio').value), con = num($('condominio').value), tasa = num($('tasa').value);
-  const anual = precio * tasa / 100, neto = anual / 12, alq = neto + con;
+  const precio = num($('precio').value), con = num($('condominio').value), srv = num($('servicios').value);
+  const tasa = num($('tasa').value), ibi = num($('ibi').value);
+  const ganancia = precio * tasa / 100, imp = precio * ibi / 100;
+  const neto = (ganancia + imp) / 12, alq = neto + con + srv;
   const r = rate();
   const other = cur === 'USD' ? 'CRC' : 'USD';
   const toOther = n => cur === 'USD' ? n * r : n / r;
   const ok = precio > 0 && tasa > 0;
   $('precioMax').textContent = ok ? money(alq) : '—';
   $('equiv').textContent = ok && r > 0 ? '≈ ' + fmt(toOther(alq), other) : '';
-  $('formula').textContent = money(precio) + ' × ' + pct(tasa) + ' ÷ 12 + ' + money(con) + (r > 0 ? '  ·  TC ₡' + r.toLocaleString('en-US') : '');
+  $('formula').textContent = money(precio) + ' × (' + pct(tasa) + ' + ' + pct(ibi) + ') ÷ 12 + ' + money(con + srv) + tcTxt();
   $('bPrecio').textContent = money(precio);
   $('bTasaLbl').textContent = 'Ganancia anual (' + pct(tasa) + ')';
-  $('bAnual').textContent = money(anual);
+  $('bAnual').textContent = money(ganancia);
+  $('bIbiLbl').textContent = 'Más impuesto anual (' + pct(ibi) + ')';
+  $('bIbi').textContent = '+' + money(imp);
   $('bNeto').textContent = money(neto);
   $('bCon').textContent = '+' + money(con);
+  $('bSrv').textContent = '+' + money(srv);
   $('bAlq').textContent = money(alq);
+  showSolidario(ok ? precio : 0);
 }
 
 function calc(){
   if (mode === 'B') return calcB();
-  const alq = num($('alquiler').value), con = num($('condominio').value), tasa = num($('tasa').value);
-  const neto = alq - con, anual = neto * 12;
-  const max = tasa > 0 ? anual / (tasa/100) : 0;
+  if (mode === 'C') return calcC();
+  const alq = num($('alquiler').value), con = num($('condominio').value), srv = num($('servicios').value);
+  const tasa = num($('tasa').value), ibi = num($('ibi').value);
+  const neto = alq - con - srv, anual = neto * 12;
+  const k = (tasa + ibi) / 100;
+  const max = k > 0 ? anual / k : 0;
   const r = rate();
   const other = cur === 'USD' ? 'CRC' : 'USD';
   const toOther = n => cur === 'USD' ? n * r : n / r;
@@ -253,23 +401,28 @@ function calc(){
   const ok = neto > 0 && tasa > 0;
   $('precioMax').textContent = ok ? money(max) : '—';
   $('equiv').textContent = ok && r > 0 ? '≈ ' + fmt(toOther(max), other) : '';
-  $('formula').textContent = money(neto) + ' × 12 ÷ ' + pct(tasa) + (r > 0 ? '  ·  TC ₡' + r.toLocaleString('en-US') : '');
+  $('formula').textContent = money(neto) + ' × 12 ÷ (' + pct(tasa) + ' + ' + pct(ibi) + ')' + tcTxt();
   $('lAlq').textContent = money(alq);
   $('lCon').textContent = '−' + money(con);
+  $('lSrv').textContent = '−' + money(srv);
   $('lNeto').textContent = money(neto);
   $('lAnual').textContent = money(anual);
+  $('lIbiLbl').textContent = 'Menos impuesto (' + pct(ibi) + ' del precio)';
+  $('lIbi').textContent = '−' + money(ok ? max * ibi / 100 : 0);
+  $('lGan').textContent = money(ok ? max * tasa / 100 : 0);
+  showSolidario(ok ? max : 0);
 
   const pedido = num($('pedido').value), v = $('verdict');
   if (!pedido || !ok){ v.hidden = true; return; }
-  const real = anual / pedido * 100;
+  const real = (anual - pedido * ibi / 100) / pedido * 100;
   v.hidden = false;
   v.className = 'verdict ' + (real >= tasa ? 'good' : real >= tasa - 2 ? 'warn' : 'bad');
   if (real >= tasa){
     $('vTitle').textContent = 'Buen precio: rinde ' + pct(real) + ' al año';
-    $('vText').textContent = 'Está ' + money(max - pedido) + ' por debajo del máximo.';
+    $('vText').textContent = 'Está ' + money(max - pedido) + ' por debajo del máximo, ya descontando el impuesto.';
   } else {
     $('vTitle').textContent = 'Rinde solo ' + pct(real) + ' al año';
-    $('vText').textContent = 'Para llegar al ' + pct(tasa) + ' hay que negociar ' + money(pedido - max) + ' menos (ofrecer ' + money(max) + ').';
+    $('vText').textContent = 'Ya descontando el impuesto. Para llegar al ' + pct(tasa) + ' hay que negociar ' + money(pedido - max) + ' menos (ofrecer ' + money(max) + ').';
   }
 }
 
@@ -304,7 +457,10 @@ $('btnUSD').addEventListener('click', () => setCurrency('USD'));
 $('btnCRC').addEventListener('click', () => setCurrency('CRC'));
 $('modeA').addEventListener('click', () => setMode('A'));
 $('modeB').addEventListener('click', () => setMode('B'));
-['alquiler','condominio','tasa','pedido','precio'].forEach(id => $(id).addEventListener('input', calc));
+$('modeC').addEventListener('click', () => setMode('C'));
+['vCompra','vVenta','vMejoras','vCom','vTras','vAnios','vRenta'].forEach(id => $(id).addEventListener('input', calc));
+$('vPre2019').addEventListener('change', calc);
+['alquiler','condominio','tasa','pedido','precio','servicios','ibi'].forEach(id => $(id).addEventListener('input', calc));
 $('tc').addEventListener('input', () => {
   const s = $('fxSrc'); s.className = 'fx-src off'; s.textContent = 'Tipo de cambio manual'; calc();
 });
