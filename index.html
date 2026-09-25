@@ -11,11 +11,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
 <style>
 :root{
+  color-scheme:light;
   --bg:#F3F5F4; --surface:#FFFFFF; --ink:#16211F; --muted:#5B6B68; --line:#D8E0DE;
   --accent:#1D5E57; --accent-soft:#E2EEEC; --on-accent:#FFFFFF;
   --good:#1E7A46; --good-bg:#E3F3E9; --warn:#9A6400; --warn-bg:#FBF0DB; --bad:#B3261E; --bad-bg:#FBE4E2;
   --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
 }
 @media (prefers-color-scheme: dark){
   :root:not([data-theme="light"]){
@@ -32,29 +34,43 @@
   --good:#6FD39A; --good-bg:#15291E; --warn:#E9B55A; --warn-bg:#2C2414; --bad:#F08A82; --bad-bg:#2E1A18;
 }
 *{box-sizing:border-box}
-body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;padding:24px 16px 40px}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;padding:24px 16px 40px}
 .wrap{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
 header h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-.01em;text-wrap:balance}
 header p{margin:0;color:var(--muted);font-size:.95rem}
-.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
 .label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin:0}
-.field{display:flex;flex-direction:column;gap:6px}
+.field{display:flex;flex-direction:column;gap:6px;min-width:0}
 .field label{font-weight:500;font-size:.95rem}
 .field small{color:var(--muted);font-size:.8rem}
-.input{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);overflow:hidden}
+.input{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);overflow:hidden;min-width:0}
 .input:focus-within{border-color:var(--accent)}
-.input span{padding:0 12px;color:var(--muted);font-family:var(--mono);font-size:1.05rem}
-.input input{flex:1;min-width:0;width:100%;border:0;background:transparent;color:var(--ink);font-family:var(--mono);font-size:1.25rem;font-weight:600;padding:12px 12px 12px 0;outline:none;font-variant-numeric:tabular-nums}
-.input input::placeholder{color:var(--muted);font-weight:500;opacity:.6}
+.input span{padding:0 10px 0 12px;color:var(--muted);font-family:var(--mono);font-size:1.05rem}
+.input input{flex:1;min-width:0;width:100%;border:0;background:transparent;color:var(--ink);font-family:var(--mono);font-size:1.2rem;font-weight:600;padding:12px 12px 12px 0;outline:none;font-variant-numeric:tabular-nums}
 .row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
-.field,.input{min-width:0}
+@media (max-width:360px){.row{grid-template-columns:minmax(0,1fr)}}
+
+.seg{display:grid;grid-template-columns:1fr 1fr;background:var(--bg);border:1.5px solid var(--line);border-radius:12px;padding:4px;gap:4px}
+.seg button{font:inherit;font-weight:600;border:0;border-radius:8px;padding:10px 8px;background:transparent;color:var(--muted);cursor:pointer}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
+.seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+
+.fx{display:flex;flex-direction:column;gap:10px;border-top:1px dashed var(--line);padding-top:14px}
+.fx-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
+.fx-src{font-size:.8rem;color:var(--muted)}
+.fx-src.ok::before{content:"● ";color:var(--good)}
+.fx-src.off::before{content:"● ";color:var(--warn)}
+.fx-pair{display:flex;gap:16px;font-size:.85rem;color:var(--muted);font-variant-numeric:tabular-nums}
+.fx-pair b{font-family:var(--mono);color:var(--ink);font-weight:600}
+
 .result{background:var(--accent);color:var(--on-accent);border:0}
 .result .label{color:inherit;opacity:.8}
-.big{font-family:var(--mono);font-size:clamp(2.1rem,10vw,2.8rem);font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums;margin:0}
-.formula{font-family:var(--mono);font-size:.85rem;opacity:.9;margin:0;overflow-wrap:anywhere}
+.big{font-family:var(--mono);font-size:clamp(1.9rem,9vw,2.6rem);font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums;margin:0;overflow-wrap:anywhere}
+.equiv{font-family:var(--mono);font-size:1.05rem;margin:0;opacity:.92;font-variant-numeric:tabular-nums}
+.formula{font-family:var(--mono);font-size:.85rem;opacity:.85;margin:0;overflow-wrap:anywhere}
 .lines{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
 .lines li{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
-.lines li b{font-family:var(--mono);font-weight:600}
+.lines li b{font-family:var(--mono);font-weight:600;text-align:right}
 .lines li.total{border-top:1px solid var(--line);padding-top:8px;font-weight:600}
 .verdict{border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
 .verdict strong{font-size:1.05rem}
@@ -63,9 +79,7 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
 .verdict.bad{background:var(--bad-bg);color:var(--bad)}
 .verdict p{margin:0;color:var(--ink);font-size:.92rem}
 .note{color:var(--muted);font-size:.82rem;margin:0;text-align:center}
-@media (max-width:360px){.row{grid-template-columns:1fr}}
 </style>
-<style>html{color-scheme:light}body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
 </head>
 <body>
 <div class="wrap">
@@ -76,35 +90,52 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
 
   <section class="card" aria-labelledby="d1">
     <p class="label" id="d1">Datos del alquiler</p>
+    <div class="seg" role="group" aria-label="Moneda">
+      <button type="button" id="btnUSD" aria-pressed="true">$ Dólares</button>
+      <button type="button" id="btnCRC" aria-pressed="false">₡ Colones</button>
+    </div>
     <div class="row">
       <div class="field">
         <label for="alquiler">Alquiler mensual</label>
-        <div class="input"><span>$</span><input id="alquiler" inputmode="decimal" value="1500"></div>
+        <div class="input"><span class="sym">$</span><input id="alquiler" inputmode="decimal" value="1,500"></div>
       </div>
       <div class="field">
         <label for="condominio">Condominio</label>
-        <div class="input"><span>$</span><input id="condominio" inputmode="decimal" value="250"></div>
+        <div class="input"><span class="sym">$</span><input id="condominio" inputmode="decimal" value="250"></div>
       </div>
     </div>
     <div class="field">
       <label for="tasa">Rendimiento anual deseado</label>
       <div class="input"><span>%</span><input id="tasa" inputmode="decimal" value="8"></div>
     </div>
+
+    <div class="fx" id="fxBox">
+      <div class="fx-head">
+        <label for="tc" style="font-weight:500">Tipo de cambio</label>
+        <span class="fx-src off" id="fxSrc">Buscando tipo de cambio…</span>
+      </div>
+      <div class="input"><span>₡</span><input id="tc" inputmode="decimal" value="454"></div>
+      <div class="fx-pair" id="fxPair" hidden>
+        <span>Compra <b id="fxCompra"></b></span>
+        <span>Venta <b id="fxVenta"></b></span>
+      </div>
+    </div>
   </section>
 
   <section class="card result" aria-live="polite">
     <p class="label">Precio máximo a pagar</p>
-    <p class="big" id="precioMax">$187,500</p>
-    <p class="formula" id="formula">$1,250 × 12 ÷ 8%</p>
+    <p class="big" id="precioMax">—</p>
+    <p class="equiv" id="equiv"></p>
+    <p class="formula" id="formula"></p>
   </section>
 
   <section class="card">
     <p class="label">Cómo se calcula</p>
     <ul class="lines">
-      <li><span>Alquiler</span><b id="lAlq">$1,500</b></li>
-      <li><span>Menos condominio</span><b id="lCon">−$250</b></li>
-      <li><span>Te queda al mes</span><b id="lNeto">$1,250</b></li>
-      <li class="total"><span>Te queda al año</span><b id="lAnual">$15,000</b></li>
+      <li><span>Alquiler</span><b id="lAlq"></b></li>
+      <li><span>Menos condominio</span><b id="lCon"></b></li>
+      <li><span>Te queda al mes</span><b id="lNeto"></b></li>
+      <li class="total"><span>Te queda al año</span><b id="lAnual"></b></li>
     </ul>
   </section>
 
@@ -112,7 +143,7 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
     <p class="label" id="d2">¿Te piden un precio? Compáralo</p>
     <div class="field">
       <label for="pedido">Precio que piden</label>
-      <div class="input"><span>$</span><input id="pedido" inputmode="decimal" value="210000"></div>
+      <div class="input"><span class="sym">$</span><input id="pedido" inputmode="decimal" value="210,000"></div>
       <small>Déjalo vacío si no tienes uno.</small>
     </div>
     <div class="verdict" id="verdict" hidden>
@@ -126,37 +157,100 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
 
 <script>
 const $ = id => document.getElementById(id);
+const MONEY = ['alquiler','condominio','pedido'];
+let cur = 'USD';
+
 const num = v => { const n = parseFloat(String(v).replace(/[^0-9.]/g,'')); return isNaN(n) ? 0 : n; };
-const usd = n => '$' + Math.round(n).toLocaleString('en-US');
+const fmt = (n, c) => (c === 'CRC' ? '₡' : '$') + Math.round(n).toLocaleString('en-US');
+const money = n => fmt(n, cur);
 const pct = n => (Math.round(n*100)/100).toLocaleString('en-US') + '%';
+const rate = () => num($('tc').value);
+
+function setCurrency(next){
+  if (next === cur) return;
+  const r = rate();
+  if (r > 0){
+    MONEY.forEach(id => {
+      const v = num($(id).value);
+      if (!v) return;
+      const conv = next === 'CRC' ? v * r : v / r;
+      const step = next === 'CRC' ? 1000 : 1;
+      $(id).value = (Math.round(conv/step)*step).toLocaleString('en-US');
+    });
+  }
+  cur = next;
+  $('btnUSD').setAttribute('aria-pressed', cur === 'USD');
+  $('btnCRC').setAttribute('aria-pressed', cur === 'CRC');
+  document.querySelectorAll('.sym').forEach(s => s.textContent = cur === 'CRC' ? '₡' : '$');
+  calc();
+}
 
 function calc(){
   const alq = num($('alquiler').value), con = num($('condominio').value), tasa = num($('tasa').value);
   const neto = alq - con, anual = neto * 12;
   const max = tasa > 0 ? anual / (tasa/100) : 0;
+  const r = rate();
+  const other = cur === 'USD' ? 'CRC' : 'USD';
+  const toOther = n => cur === 'USD' ? n * r : n / r;
 
-  $('precioMax').textContent = neto > 0 && tasa > 0 ? usd(max) : '—';
-  $('formula').textContent = usd(neto) + ' × 12 ÷ ' + pct(tasa);
-  $('lAlq').textContent = usd(alq);
-  $('lCon').textContent = '−' + usd(con);
-  $('lNeto').textContent = usd(neto);
-  $('lAnual').textContent = usd(anual);
+  const ok = neto > 0 && tasa > 0;
+  $('precioMax').textContent = ok ? money(max) : '—';
+  $('equiv').textContent = ok && r > 0 ? '≈ ' + fmt(toOther(max), other) : '';
+  $('formula').textContent = money(neto) + ' × 12 ÷ ' + pct(tasa) + (r > 0 ? '  ·  TC ₡' + r.toLocaleString('en-US') : '');
+  $('lAlq').textContent = money(alq);
+  $('lCon').textContent = '−' + money(con);
+  $('lNeto').textContent = money(neto);
+  $('lAnual').textContent = money(anual);
 
   const pedido = num($('pedido').value), v = $('verdict');
-  if (!pedido || neto <= 0 || tasa <= 0){ v.hidden = true; return; }
+  if (!pedido || !ok){ v.hidden = true; return; }
   const real = anual / pedido * 100;
   v.hidden = false;
   v.className = 'verdict ' + (real >= tasa ? 'good' : real >= tasa - 2 ? 'warn' : 'bad');
   if (real >= tasa){
     $('vTitle').textContent = 'Buen precio: rinde ' + pct(real) + ' al año';
-    $('vText').textContent = 'Está ' + usd(max - pedido) + ' por debajo del máximo.';
+    $('vText').textContent = 'Está ' + money(max - pedido) + ' por debajo del máximo.';
   } else {
     $('vTitle').textContent = 'Rinde solo ' + pct(real) + ' al año';
-    $('vText').textContent = 'Para llegar al ' + pct(tasa) + ' hay que negociar ' + usd(pedido - max) + ' menos (ofrecer ' + usd(max) + ').';
+    $('vText').textContent = 'Para llegar al ' + pct(tasa) + ' hay que negociar ' + money(pedido - max) + ' menos (ofrecer ' + money(max) + ').';
   }
 }
+
+async function loadRate(){
+  const src = $('fxSrc');
+  const withTimeout = (url) => {
+    const ctl = new AbortController(); const t = setTimeout(() => ctl.abort(), 6000);
+    return fetch(url, {signal: ctl.signal}).then(r => { clearTimeout(t); if (!r.ok) throw 0; return r.json(); });
+  };
+  try {
+    const d = await withTimeout('https://apis.gometa.org/tdc/tdc.json');
+    if (!d.venta) throw 0;
+    $('tc').value = d.venta;
+    $('fxCompra').textContent = '₡' + d.compra; $('fxVenta').textContent = '₡' + d.venta;
+    $('fxPair').hidden = false;
+    src.className = 'fx-src ok'; src.textContent = 'BCCR, venta del ' + (d.venta_date || 'día');
+  } catch(e) {
+    try {
+      const d = await withTimeout('https://open.er-api.com/v6/latest/USD');
+      const r = d && d.rates && d.rates.CRC;
+      if (!r) throw 0;
+      $('tc').value = Math.round(r*100)/100;
+      src.className = 'fx-src ok'; src.textContent = 'Tipo de cambio de mercado de hoy';
+    } catch(e2) {
+      src.className = 'fx-src off'; src.textContent = 'Sin conexión: escríbelo a mano';
+    }
+  }
+  calc();
+}
+
+$('btnUSD').addEventListener('click', () => setCurrency('USD'));
+$('btnCRC').addEventListener('click', () => setCurrency('CRC'));
 ['alquiler','condominio','tasa','pedido'].forEach(id => $(id).addEventListener('input', calc));
+$('tc').addEventListener('input', () => {
+  const s = $('fxSrc'); s.className = 'fx-src off'; s.textContent = 'Tipo de cambio manual'; calc();
+});
 calc();
+loadRate();
 </script>
 </body>
 </html>
