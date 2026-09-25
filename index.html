@@ -44,9 +44,10 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
 .input{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);overflow:hidden}
 .input:focus-within{border-color:var(--accent)}
 .input span{padding:0 12px;color:var(--muted);font-family:var(--mono);font-size:1.05rem}
-.input input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font-family:var(--mono);font-size:1.25rem;font-weight:600;padding:12px 12px 12px 0;outline:none;font-variant-numeric:tabular-nums}
+.input input{flex:1;min-width:0;width:100%;border:0;background:transparent;color:var(--ink);font-family:var(--mono);font-size:1.25rem;font-weight:600;padding:12px 12px 12px 0;outline:none;font-variant-numeric:tabular-nums}
 .input input::placeholder{color:var(--muted);font-weight:500;opacity:.6}
-.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px}
+.field,.input{min-width:0}
 .result{background:var(--accent);color:var(--on-accent);border:0}
 .result .label{color:inherit;opacity:.8}
 .big{font-family:var(--mono);font-size:clamp(2.1rem,10vw,2.8rem);font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums;margin:0}
