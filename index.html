@@ -55,6 +55,9 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
 .seg button[aria-pressed="true"]{background:var(--accent);color:var(--on-accent)}
 .seg button:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 
+.mode{border-radius:14px;padding:5px}
+.mode button{padding:12px 8px;font-size:.95rem}
+.hint{margin:0;color:var(--muted);font-size:.9rem}
 .fx{display:flex;flex-direction:column;gap:10px;border-top:1px dashed var(--line);padding-top:14px}
 .fx-head{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}
 .fx-src{font-size:.8rem;color:var(--muted)}
@@ -85,8 +88,14 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
 <div class="wrap">
   <header>
     <h1>Precio justo de la vivienda</h1>
-    <p>Cuánto pagar como máximo según lo que produce en alquiler.</p>
+    <p>Calcula el precio o el alquiler para ganar el rendimiento que buscas.</p>
   </header>
+
+  <div class="seg mode" role="group" aria-label="Qué quieres calcular">
+    <button type="button" id="modeA" aria-pressed="true">Tengo el alquiler</button>
+    <button type="button" id="modeB" aria-pressed="false">Tengo el precio</button>
+  </div>
+  <p class="hint" id="modeHint">Te digo cuánto pagar como máximo por la vivienda.</p>
 
   <section class="card" aria-labelledby="d1">
     <p class="label" id="d1">Datos del alquiler</p>
@@ -95,12 +104,16 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
       <button type="button" id="btnCRC" aria-pressed="false">₡ Colones</button>
     </div>
     <div class="row">
-      <div class="field">
+      <div class="field" id="fAlq">
         <label for="alquiler">Alquiler mensual</label>
         <div class="input"><span class="sym">$</span><input id="alquiler" inputmode="decimal" value="1,500"></div>
       </div>
+      <div class="field" id="fPrecio" hidden>
+        <label for="precio">Precio del inmueble</label>
+        <div class="input"><span class="sym">$</span><input id="precio" inputmode="decimal" value="187,500"></div>
+      </div>
       <div class="field">
-        <label for="condominio">Condominio</label>
+        <label for="condominio">Condominio mensual</label>
         <div class="input"><span class="sym">$</span><input id="condominio" inputmode="decimal" value="250"></div>
       </div>
     </div>
@@ -123,7 +136,7 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
   </section>
 
   <section class="card result" aria-live="polite">
-    <p class="label">Precio máximo a pagar</p>
+    <p class="label" id="resLabel">Precio máximo a pagar</p>
     <p class="big" id="precioMax">—</p>
     <p class="equiv" id="equiv"></p>
     <p class="formula" id="formula"></p>
@@ -131,15 +144,22 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
 
   <section class="card">
     <p class="label">Cómo se calcula</p>
-    <ul class="lines">
+    <ul class="lines" id="linesA">
       <li><span>Alquiler</span><b id="lAlq"></b></li>
       <li><span>Menos condominio</span><b id="lCon"></b></li>
       <li><span>Te queda al mes</span><b id="lNeto"></b></li>
       <li class="total"><span>Te queda al año</span><b id="lAnual"></b></li>
     </ul>
+    <ul class="lines" id="linesB" hidden>
+      <li><span>Precio del inmueble</span><b id="bPrecio"></b></li>
+      <li><span id="bTasaLbl">Ganancia anual (8%)</span><b id="bAnual"></b></li>
+      <li><span>Ganancia al mes (÷ 12)</span><b id="bNeto"></b></li>
+      <li><span>Más condominio</span><b id="bCon"></b></li>
+      <li class="total"><span>Alquiler a cobrar</span><b id="bAlq"></b></li>
+    </ul>
   </section>
 
-  <section class="card" aria-labelledby="d2">
+  <section class="card" aria-labelledby="d2" id="compare">
     <p class="label" id="d2">¿Te piden un precio? Compáralo</p>
     <div class="field">
       <label for="pedido">Precio que piden</label>
@@ -152,13 +172,14 @@ header p{margin:0;color:var(--muted);font-size:.95rem}
     </div>
   </section>
 
-  <p class="note">Ejemplo precargado. Cambia cualquier número y todo se recalcula.</p>
+  <p class="note" id="note">Ejemplo precargado. Cambia cualquier número y todo se recalcula.</p>
 </div>
 
 <script>
 const $ = id => document.getElementById(id);
-const MONEY = ['alquiler','condominio','pedido'];
+const MONEY = ['alquiler','condominio','pedido','precio'];
 let cur = 'USD';
+let mode = 'A';
 
 const num = v => { const n = parseFloat(String(v).replace(/[^0-9.]/g,'')); return isNaN(n) ? 0 : n; };
 const fmt = (n, c) => (c === 'CRC' ? '₡' : '$') + Math.round(n).toLocaleString('en-US');
@@ -185,7 +206,42 @@ function setCurrency(next){
   calc();
 }
 
+function setMode(next){
+  mode = next;
+  $('modeA').setAttribute('aria-pressed', mode === 'A');
+  $('modeB').setAttribute('aria-pressed', mode === 'B');
+  $('fAlq').hidden = mode !== 'A';
+  $('fPrecio').hidden = mode !== 'B';
+  $('linesA').hidden = mode !== 'A';
+  $('linesB').hidden = mode !== 'B';
+  $('compare').hidden = mode !== 'A';
+  $('modeHint').textContent = mode === 'A'
+    ? 'Te digo cuánto pagar como máximo por la vivienda.'
+    : 'Te digo cuánto cobrar de alquiler como mínimo para ganar tu rendimiento.';
+  $('resLabel').textContent = mode === 'A' ? 'Precio máximo a pagar' : 'Alquiler mínimo a cobrar al mes';
+  calc();
+}
+
+function calcB(){
+  const precio = num($('precio').value), con = num($('condominio').value), tasa = num($('tasa').value);
+  const anual = precio * tasa / 100, neto = anual / 12, alq = neto + con;
+  const r = rate();
+  const other = cur === 'USD' ? 'CRC' : 'USD';
+  const toOther = n => cur === 'USD' ? n * r : n / r;
+  const ok = precio > 0 && tasa > 0;
+  $('precioMax').textContent = ok ? money(alq) : '—';
+  $('equiv').textContent = ok && r > 0 ? '≈ ' + fmt(toOther(alq), other) : '';
+  $('formula').textContent = money(precio) + ' × ' + pct(tasa) + ' ÷ 12 + ' + money(con) + (r > 0 ? '  ·  TC ₡' + r.toLocaleString('en-US') : '');
+  $('bPrecio').textContent = money(precio);
+  $('bTasaLbl').textContent = 'Ganancia anual (' + pct(tasa) + ')';
+  $('bAnual').textContent = money(anual);
+  $('bNeto').textContent = money(neto);
+  $('bCon').textContent = '+' + money(con);
+  $('bAlq').textContent = money(alq);
+}
+
 function calc(){
+  if (mode === 'B') return calcB();
   const alq = num($('alquiler').value), con = num($('condominio').value), tasa = num($('tasa').value);
   const neto = alq - con, anual = neto * 12;
   const max = tasa > 0 ? anual / (tasa/100) : 0;
@@ -245,7 +301,9 @@ async function loadRate(){
 
 $('btnUSD').addEventListener('click', () => setCurrency('USD'));
 $('btnCRC').addEventListener('click', () => setCurrency('CRC'));
-['alquiler','condominio','tasa','pedido'].forEach(id => $(id).addEventListener('input', calc));
+$('modeA').addEventListener('click', () => setMode('A'));
+$('modeB').addEventListener('click', () => setMode('B'));
+['alquiler','condominio','tasa','pedido','precio'].forEach(id => $(id).addEventListener('input', calc));
 $('tc').addEventListener('input', () => {
   const s = $('fxSrc'); s.className = 'fx-src off'; s.textContent = 'Tipo de cambio manual'; calc();
 });
