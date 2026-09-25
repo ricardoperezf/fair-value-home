@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Precio casa">
+<meta name="theme-color" content="#1D5E57">
+<title>Precio Justo de Vivienda</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap">
+<style>
+:root{
+  --bg:#F3F5F4; --surface:#FFFFFF; --ink:#16211F; --muted:#5B6B68; --line:#D8E0DE;
+  --accent:#1D5E57; --accent-soft:#E2EEEC; --on-accent:#FFFFFF;
+  --good:#1E7A46; --good-bg:#E3F3E9; --warn:#9A6400; --warn-bg:#FBF0DB; --bad:#B3261E; --bad-bg:#FBE4E2;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    color-scheme:dark;
+    --bg:#101716; --surface:#18211F; --ink:#E6EEEC; --muted:#93A5A1; --line:#2A3634;
+    --accent:#6FC3B6; --accent-soft:#1D2E2B; --on-accent:#0E1A18;
+    --good:#6FD39A; --good-bg:#15291E; --warn:#E9B55A; --warn-bg:#2C2414; --bad:#F08A82; --bad-bg:#2E1A18;
+  }
+}
+:root[data-theme="dark"]{
+  color-scheme:dark;
+  --bg:#101716; --surface:#18211F; --ink:#E6EEEC; --muted:#93A5A1; --line:#2A3634;
+  --accent:#6FC3B6; --accent-soft:#1D2E2B; --on-accent:#0E1A18;
+  --good:#6FD39A; --good-bg:#15291E; --warn:#E9B55A; --warn-bg:#2C2414; --bad:#F08A82; --bad-bg:#2E1A18;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.5;padding:24px 16px 40px}
+.wrap{max-width:480px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+header h1{font-size:1.5rem;margin:0 0 4px;letter-spacing:-.01em;text-wrap:balance}
+header p{margin:0;color:var(--muted);font-size:.95rem}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.label{font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);font-weight:600;margin:0}
+.field{display:flex;flex-direction:column;gap:6px}
+.field label{font-weight:500;font-size:.95rem}
+.field small{color:var(--muted);font-size:.8rem}
+.input{display:flex;align-items:center;border:1.5px solid var(--line);border-radius:10px;background:var(--bg);overflow:hidden}
+.input:focus-within{border-color:var(--accent)}
+.input span{padding:0 12px;color:var(--muted);font-family:var(--mono);font-size:1.05rem}
+.input input{flex:1;min-width:0;border:0;background:transparent;color:var(--ink);font-family:var(--mono);font-size:1.25rem;font-weight:600;padding:12px 12px 12px 0;outline:none;font-variant-numeric:tabular-nums}
+.input input::placeholder{color:var(--muted);font-weight:500;opacity:.6}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.result{background:var(--accent);color:var(--on-accent);border:0}
+.result .label{color:inherit;opacity:.8}
+.big{font-family:var(--mono);font-size:clamp(2.1rem,10vw,2.8rem);font-weight:600;line-height:1.1;font-variant-numeric:tabular-nums;margin:0}
+.formula{font-family:var(--mono);font-size:.85rem;opacity:.9;margin:0;overflow-wrap:anywhere}
+.lines{display:flex;flex-direction:column;gap:8px;margin:0;padding:0;list-style:none}
+.lines li{display:flex;justify-content:space-between;gap:12px;font-variant-numeric:tabular-nums}
+.lines li b{font-family:var(--mono);font-weight:600}
+.lines li.total{border-top:1px solid var(--line);padding-top:8px;font-weight:600}
+.verdict{border-radius:10px;padding:12px 14px;display:flex;flex-direction:column;gap:4px}
+.verdict strong{font-size:1.05rem}
+.verdict.good{background:var(--good-bg);color:var(--good)}
+.verdict.warn{background:var(--warn-bg);color:var(--warn)}
+.verdict.bad{background:var(--bad-bg);color:var(--bad)}
+.verdict p{margin:0;color:var(--ink);font-size:.92rem}
+.note{color:var(--muted);font-size:.82rem;margin:0;text-align:center}
+@media (max-width:360px){.row{grid-template-columns:1fr}}
+</style>
+<style>html{color-scheme:light}body{margin:0}:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Precio justo de la vivienda</h1>
+    <p>Cuánto pagar como máximo según lo que produce en alquiler.</p>
+  </header>
+
+  <section class="card" aria-labelledby="d1">
+    <p class="label" id="d1">Datos del alquiler</p>
+    <div class="row">
+      <div class="field">
+        <label for="alquiler">Alquiler mensual</label>
+        <div class="input"><span>$</span><input id="alquiler" inputmode="decimal" value="1500"></div>
+      </div>
+      <div class="field">
+        <label for="condominio">Condominio</label>
+        <div class="input"><span>$</span><input id="condominio" inputmode="decimal" value="250"></div>
+      </div>
+    </div>
+    <div class="field">
+      <label for="tasa">Rendimiento anual deseado</label>
+      <div class="input"><span>%</span><input id="tasa" inputmode="decimal" value="8"></div>
+    </div>
+  </section>
+
+  <section class="card result" aria-live="polite">
+    <p class="label">Precio máximo a pagar</p>
+    <p class="big" id="precioMax">$187,500</p>
+    <p class="formula" id="formula">$1,250 × 12 ÷ 8%</p>
+  </section>
+
+  <section class="card">
+    <p class="label">Cómo se calcula</p>
+    <ul class="lines">
+      <li><span>Alquiler</span><b id="lAlq">$1,500</b></li>
+      <li><span>Menos condominio</span><b id="lCon">−$250</b></li>
+      <li><span>Te queda al mes</span><b id="lNeto">$1,250</b></li>
+      <li class="total"><span>Te queda al año</span><b id="lAnual">$15,000</b></li>
+    </ul>
+  </section>
+
+  <section class="card" aria-labelledby="d2">
+    <p class="label" id="d2">¿Te piden un precio? Compáralo</p>
+    <div class="field">
+      <label for="pedido">Precio que piden</label>
+      <div class="input"><span>$</span><input id="pedido" inputmode="decimal" value="210000"></div>
+      <small>Déjalo vacío si no tienes uno.</small>
+    </div>
+    <div class="verdict" id="verdict" hidden>
+      <strong id="vTitle"></strong>
+      <p id="vText"></p>
+    </div>
+  </section>
+
+  <p class="note">Ejemplo precargado. Cambia cualquier número y todo se recalcula.</p>
+</div>
+
+<script>
+const $ = id => document.getElementById(id);
+const num = v => { const n = parseFloat(String(v).replace(/[^0-9.]/g,'')); return isNaN(n) ? 0 : n; };
+const usd = n => '$' + Math.round(n).toLocaleString('en-US');
+const pct = n => (Math.round(n*100)/100).toLocaleString('en-US') + '%';
+
+function calc(){
+  const alq = num($('alquiler').value), con = num($('condominio').value), tasa = num($('tasa').value);
+  const neto = alq - con, anual = neto * 12;
+  const max = tasa > 0 ? anual / (tasa/100) : 0;
+
+  $('precioMax').textContent = neto > 0 && tasa > 0 ? usd(max) : '—';
+  $('formula').textContent = usd(neto) + ' × 12 ÷ ' + pct(tasa);
+  $('lAlq').textContent = usd(alq);
+  $('lCon').textContent = '−' + usd(con);
+  $('lNeto').textContent = usd(neto);
+  $('lAnual').textContent = usd(anual);
+
+  const pedido = num($('pedido').value), v = $('verdict');
+  if (!pedido || neto <= 0 || tasa <= 0){ v.hidden = true; return; }
+  const real = anual / pedido * 100;
+  v.hidden = false;
+  v.className = 'verdict ' + (real >= tasa ? 'good' : real >= tasa - 2 ? 'warn' : 'bad');
+  if (real >= tasa){
+    $('vTitle').textContent = 'Buen precio: rinde ' + pct(real) + ' al año';
+    $('vText').textContent = 'Está ' + usd(max - pedido) + ' por debajo del máximo.';
+  } else {
+    $('vTitle').textContent = 'Rinde solo ' + pct(real) + ' al año';
+    $('vText').textContent = 'Para llegar al ' + pct(tasa) + ' hay que negociar ' + usd(pedido - max) + ' menos (ofrecer ' + usd(max) + ').';
+  }
+}
+['alquiler','condominio','tasa','pedido'].forEach(id => $(id).addEventListener('input', calc));
+calc();
+</script>
+</body>
+</html>
